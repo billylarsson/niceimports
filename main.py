@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QLabel, QPushButton, QPlainTextEdit, QSpinBox
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QLabel, QPlainTextEdit, QPushButton, QSpinBox
 import sys
 
 class Styler(QtWidgets.QMainWindow):
