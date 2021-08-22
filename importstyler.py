@@ -246,11 +246,7 @@ class Alphabetially(CLICKER):
         if ev.button() == 1:
             self.toggle_connection(forceconnect=True)
             text = self.main.lefttext.toPlainText()
-            text = text.split('\n')
-            text.sort()
-            text = '\n'.join(text)
-            text = self.main.format_text(text)
-            self.main.righttext.setText(text)
+            self.main.lefttext.setText(text)
 
 class AlphabetiallyReversed(CLICKER):
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
@@ -258,6 +254,9 @@ class AlphabetiallyReversed(CLICKER):
         if ev.button() == 1:
             self.toggle_connection(forceconnect=True)
             text = self.main.lefttext.toPlainText()
+            self.main.lefttext.setText(text)
+
+            text = self.main.righttext.toPlainText()
             text = text.split('\n')
             text.sort()
             text.reverse()
@@ -340,6 +339,42 @@ class SameSpace(CLICKER):
             if self.mode < 1:
                 self.mode = 1
 
+class Separator(CLICKER):
+    def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
+        text = self.main.lefttext.toPlainText()
+        text = text.split('\n')
+
+        if len(text) < 3:
+            return
+
+        toplengt = 0
+        max = 60
+
+        for i in [text[0], text[1], text[2]]:
+            if len(i) >= toplengt:
+                toplengt = len(i) + 2
+            if toplengt > max:
+                toplengt = max
+
+        start   = f" # <=============[ "
+        new = "\n# \n"
+
+        for i in [text[0], text[1], text[2]]:
+            for count in range(200):
+                pre_spaces = " " * (toplengt - len(i)) + (" " * count)
+                post_spaces = " " * (toplengt - len(i)) + (" " * count)
+                clamps = "=" * 30
+                tmp = start + pre_spaces +  i.upper() + post_spaces + ']' + clamps + '<\n'
+
+                if len(tmp) > 100:
+                    tmp = start + pre_spaces[0:-1] + i.upper() + post_spaces[0:-1] + ']' + clamps + '<\n'
+                if len(tmp) > 100:
+                    tmp = start + pre_spaces[0:-1] + i.upper() + post_spaces[0:-2] + ']' + clamps + '<\n'
+                if len(tmp) == 100:
+                    new += tmp
+                    break
+
+        self.main.righttext.setText(self.main.format_text(new))
 
 class QUIT(CLICKER):
     def mouseReleaseEvent(self, ev) -> None:
@@ -355,6 +390,9 @@ class ImportStylerV2(QtWidgets.QMainWindow):
         tech.style(self, background='rgb(130,130,130)', color='white')
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.draw_stuff()
+        self.lines = False
+        self.final = ""
+        self.sort_dict = {}
         self.show()
 
     def draw_stuff(self):
@@ -376,6 +414,11 @@ class ImportStylerV2(QtWidgets.QMainWindow):
         samespace.setText(' SAME SPACE')
         tech.pos(samespace, coat=alpha, below=rev, y_margin=1)
         tech.style(samespace, background='rgb(0,0,100)', color='rgb(200,200,200)')
+
+        separator = Separator(self)
+        separator.setText(' SEPARATOR')
+        tech.pos(separator, coat=alpha, below=samespace, y_margin=1)
+        tech.style(separator, background='rgb(0,0,90)', color='rgb(200,200,200)')
 
         self.lefttext = QtWidgets.QTextEdit(self)
         self.lefttext.textChanged.connect(self.style_text)
@@ -402,6 +445,7 @@ class ImportStylerV2(QtWidgets.QMainWindow):
 
         self.connection_label.toggle_connection(forceconnect=True)
         tech.pos(self.connection_label, width=self.width() - 6)
+
 
     def mousePressEvent(self, ev: QtGui.QMouseEvent) -> None:
         if ev.button() == 1:
@@ -446,6 +490,7 @@ class ImportStylerV2(QtWidgets.QMainWindow):
 
         caught = self.add_possible_strings(text_list)
         caught = self.sort_imports_accordingly(caught)
+
         self.sort_froms_accordingly(caught)
         self.put_together()
         formated_text = self.format_text(self.final)
